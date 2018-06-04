@@ -6,13 +6,23 @@ const fs = require('fs');
 const Json2csvParser = require('json2csv').Parser;
 
 //create fields for list items
-const fields = ['Title', 'Price', 'ImageURL', 'URL', 'Time'];
+const fields = ['Title', 'Price', 'ImageURL', 'URL', 'Time' ];
 const json2csvParser = new Json2csvParser({ fields });
 const listItems = [{}];
 
 //Print Error Messages
 const errorMessage = (error) => {
-  console.error(`Error: ${error.message}`);
+let errorLog = [];
+let date =new Date()
+errorLog.push( `Error Date: [${date}] / Error Message: <${error.message}>`)
+  fs.appendFile(`data/scraper-error.log`, errorLog, function (error) {
+  });//end of fs
+  if(error.code === 'ERR_ASSERTION'){
+  console.error(`Error:${error.message}`);
+}
+  if(error.code === 'ENOTFOUND'){
+    console.error(`There's been a 404 error. Cannot connect to 'shirts4mike.com'`)
+  }
 };
 
 //check to see if a folder named 'data' exist
@@ -27,14 +37,14 @@ fs.stat('data', function (error, stats) {
 });//end of fs.stat
 
 //create array of shirt page links on website
-let shirtID = [101, 102, 103, 104, 105, 106, 107, 108];
+let shirtID = new Set([101, 102, 103, 104, 105, 106, 107, 108]);
 
 //vist the website http://shirts4mike.com/shirts.php and loop through each shirt page;
 //use scraper to get field values
-for (let i = 0; i < shirtID.length; i++) {
+for(let id of shirtID) {
   //check for protocol error
   try {
-    scrapeIt(`http://shirts4mike.com/shirt.php?id=${shirtID[i]}`, {
+    scrapeIt(`http://shirts4mike.com/shirt.php?id=${id}`, {
 
       Title: '.breadcrumb ',
 
@@ -43,8 +53,9 @@ for (let i = 0; i < shirtID.length; i++) {
 
   //create promise to get time and format the title; return the data
   .then(({ data })=> {
+
       data.URL = `http://shirts4mike.com`;
-      data.ImageURL = `${data.URL}/shirt.php?id=${shirtID[i]}`;
+      data.ImageURL = `${data.URL}/shirt.php?id=${id}`;
       data.Time = new Date().toLocaleTimeString();
       data.Title = data.Title.slice(8);
       return data;
@@ -68,11 +79,13 @@ for (let i = 0; i < shirtID.length; i++) {
     })//end of then
 
     .catch(function (error) {
-      console.error(`There's been a 404 error. Cannot connect to '${error.message.slice(37, 51)}'. Please try 'http://shirts4mike.com'.`);
+      errorMessage(error);
+      return
     });//end of catch
 
     //catch protocol error
   } catch (error) {
     errorMessage(error);
+    return
   }//end of catch
 }//end of for loop
