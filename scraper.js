@@ -10,19 +10,22 @@ const fields = ['Title', 'Price', 'ImageURL', 'URL', 'Time' ];
 const json2csvParser = new Json2csvParser({ fields });
 const listItems = [{}];
 
-//Print Error Messages
+//create error count variable
+let errorCount=0;
+
+//Print Error Messages Function
 const errorMessage = (error) => {
 let errorLog = [];
-let date =new Date()
-errorLog.push( `Error Date: [${date}] / Error Message: <${error.message}>`)
+let date =new Date();
+errorLog.push( `Error Date: [${date}] / Error Message: <${error.message}>`);
   fs.appendFile(`data/scraper-error.log`, errorLog, function (error) {
   });//end of fs
   if(error.code === 'ERR_ASSERTION'){
   console.error(`Error:${error.message}`);
-}
+}//end of if
   if(error.code === 'ENOTFOUND'){
-    console.error(`There's been a 404 error. Cannot connect to 'shirts4mike.com'`)
-  }
+    console.error(`There's been a 404 error. Cannot connect to 'shirts4mike.com'`);
+  }//end of if
 };
 
 //check to see if a folder named 'data' exist
@@ -44,7 +47,7 @@ let shirtID = new Set([101, 102, 103, 104, 105, 106, 107, 108]);
 for(let id of shirtID) {
   //check for protocol error
   try {
-    scrapeIt(`http://shirts4mike.com/shirt.php?id=${id}`, {
+    scrapeIt(`http://sirts4mike.com/shirt.php?id=${id}`, {
 
       Title: '.breadcrumb ',
 
@@ -52,8 +55,7 @@ for(let id of shirtID) {
     })
 
   //create promise to get time and format the title; return the data
-  .then(({ data })=> {
-
+  .then(({ data }) => {
       data.URL = `http://shirts4mike.com`;
       data.ImageURL = `${data.URL}/shirt.php?id=${id}`;
       data.Time = new Date().toLocaleTimeString();
@@ -79,13 +81,15 @@ for(let id of shirtID) {
     })//end of then
 
     .catch(function (error) {
+      errorCount ++;
+      if (errorCount === 1 ){
       errorMessage(error);
-      return
+    }
     });//end of catch
 
     //catch protocol error
   } catch (error) {
     errorMessage(error);
-    return
-  }//end of catch
-}//end of for loop
+    return ;
+  };//end of catch
+};//end of for loop
