@@ -47,7 +47,7 @@ let shirtID = new Set([101, 102, 103, 104, 105, 106, 107, 108]);
 for(let id of shirtID) {
   //check for protocol error
   try {
-    scrapeIt(`http://sirts4mike.com/shirt.php?id=${id}`, {
+    scrapeIt(`http://shirts4mike.com/shirt.php?id=${id}`, {
 
       Title: '.breadcrumb ',
 
